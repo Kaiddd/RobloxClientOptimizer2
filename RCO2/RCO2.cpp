@@ -151,8 +151,10 @@ static auto WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata) 
 void mainThread() {
     while (true) {
         while (!isRcoEnabled) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
         }
+
+        //Bit of error checking
         std::string robloxVersionStr;
         CURL* req = curl_easy_init();
         CURLcode res;
@@ -174,7 +176,69 @@ void mainThread() {
             printMainText();
             continue;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(60000));
+
+        //Okay! Lets see if the flag list needs to be updated...
+        string storedFflagVersion;
+
+        std::ifstream flagVersionFile(rootDir + "\\flagversion.rco");
+        flagVersionFile.seekg(0, std::ios::end);
+        size_t size = flagVersionFile.tellg();
+        string buffer(size, ' ');
+        flagVersionFile.seekg(0);
+        flagVersionFile.read(&buffer[0], size);
+        storedFflagVersion = buffer;
+        flagVersionFile.close();
+
+        std::string latestFflagVersion;
+        CURL* req2 = curl_easy_init();
+        CURLcode res2;
+        curl_easy_setopt(req2, CURLOPT_URL, "https://raw.githubusercontent.com/Kaiddd/RobloxClientOptimizer2/main/flagversion.rco"); //change to nul's url when she forks this
+        curl_easy_setopt(req2, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(req2, CURLOPT_WRITEDATA, &latestFflagVersion);
+        res2 = curl_easy_perform(req2);
+        if (res2 != CURLE_OK) {
+            std::cout << "\nNETWORK ERROR | PLEASE CHECK YOUR INTERNET CONNECTION | TRYING AGAIN IN 30 SECONDS. | 0x7\n";
+            curl_easy_cleanup(req2);
+            std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+            printMainText();
+            continue;
+        }
+        curl_easy_cleanup(req2);
+
+        if (storedFflagVersion != latestFflagVersion || std::filesystem::exists(robloxVersionFolder + "\\" + robloxVersionStr + "\\ClientSettings\\ClientAppSettings.json") == false) { //We need to do an update!!!!
+            if (std::filesystem::exists(robloxVersionFolder + "\\" + robloxVersionStr + "\\ClientSettings") == false) {
+                std::filesystem::create_directory(robloxVersionFolder + "\\" + robloxVersionStr + "\\ClientSettings");
+            }
+
+            std::string latestFflagList;
+            CURL* req3 = curl_easy_init();
+            CURLcode res2;
+            curl_easy_setopt(req3, CURLOPT_URL, "https://raw.githubusercontent.com/Kaiddd/RobloxClientOptimizer2/main/ClientAppSettings.json"); //change to nul's url when she forks this
+            curl_easy_setopt(req3, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(req3, CURLOPT_WRITEDATA, &latestFflagList);
+            res2 = curl_easy_perform(req3);
+            if (res2 != CURLE_OK) {
+                std::cout << "\nNETWORK ERROR | PLEASE CHECK YOUR INTERNET CONNECTION | TRYING AGAIN IN 30 SECONDS. | 0x8\n";
+                curl_easy_cleanup(req3);
+                std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+                printMainText();
+                continue;
+            }
+            curl_easy_cleanup(req3);
+
+            std::ofstream fflagList;
+            fflagList.open(robloxVersionFolder + "\\" + robloxVersionStr + "\\ClientSettings\\ClientAppSettings.json");
+            fflagList << latestFflagList;
+            fflagList.close();
+
+            //Update the flag version file since we just updated the flags!
+            std::ofstream flagversion;
+            flagversion.open(rootDir + "\\flagversion.rco");
+            flagversion << latestFflagVersion;
+            flagversion.close();
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(30000)); //We check for fflag updates every 30 seconds.
     }
 }
 
@@ -210,6 +274,13 @@ int main() {
         curl_easy_cleanup(req);
 
         fclose(file);
+    }
+
+    if (std::filesystem::exists(rootDir + "\\flagversion.rco") == false) {
+        std::ofstream flagversion;
+        flagversion.open(rootDir + "\\flagversion.rco");
+        flagversion << "0";
+        flagversion.close();
     }
 
     if (std::filesystem::exists(rootDir + "\\isHidden.rco") == false) {
@@ -294,6 +365,20 @@ int main() {
             isEnabledFile << "t";
         } else {
             isEnabledFile << "f";
+            std::string robloxVersionStr;
+            CURL* req = curl_easy_init();
+            CURLcode res;
+            curl_easy_setopt(req, CURLOPT_URL, "http://setup.roblox.com/version");
+            curl_easy_setopt(req, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(req, CURLOPT_WRITEDATA, &robloxVersionStr);
+            res = curl_easy_perform(req);
+            if (res != CURLE_OK) {
+                std::cout << "\nNETWORK ERROR | FAILED TO REMOVE FFLAG LIST, DELETE MANUALLY AT " + robloxVersionFolder + "\\current-roblox-version\\ClientSettings\\ClientAppSettings.json | 0x9\n";
+            }
+            curl_easy_cleanup(req);
+            if (std::filesystem::exists(robloxVersionFolder + "\\" + robloxVersionStr + "\\ClientSettings\\ClientAppSettings.json") == true) {
+                remove((robloxVersionFolder + "\\" + robloxVersionStr + "\\ClientSettings\\ClientAppSettings.json").c_str());
+            }
         }
         isEnabledFile.close();
     }
