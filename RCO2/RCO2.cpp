@@ -48,10 +48,11 @@ int traySystem() {
     return static_cast<int>(msg.wParam);
 }
 
+HWND consoleWindow = GetConsoleWindow();
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     static NOTIFYICONDATA nid;
     std::ofstream isHiddenFile;
-    HWND consoleWindow = GetConsoleWindow();
 
     switch (iMsg) {
         case WM_CREATE:
@@ -110,6 +111,8 @@ HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 int main() {
     //Preinit
+    SetConsoleTitle(L"Roblox Client Optimizer");
+
     if (std::filesystem::exists(rootDir) == false) {
         std::cout << "Could not find proper RCO files, please reinstall RCO | 0x1\n";
         std::cin.get();
@@ -203,6 +206,10 @@ int main() {
         ShowWindow(GetConsoleWindow(), SW_SHOW);
     }
 
+    SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MINIMIZEBOX);
+    SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX);
+    EnableMenuItem(GetSystemMenu(consoleWindow, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+
     //Input loop
     while (true) {
         system("cls");
@@ -226,6 +233,14 @@ int main() {
             SetConsoleTextAttribute(hConsole, 7);
             std::cout << " RCO.\n\n";
         }
+
+        SetConsoleTextAttribute(hConsole, 6);
+        std::cout << "This window can be hidden via the RCO tray icon!\nYou can ";
+        SetConsoleTextAttribute(hConsole, 12);
+        std::cout << "close";
+        SetConsoleTextAttribute(hConsole, 6);
+        std::cout << " RCO with ALT+F4 or any other similar method.\n";
+        SetConsoleTextAttribute(hConsole, 7);
 
         string t; //Throwaway
         std::getline(std::cin, t);
