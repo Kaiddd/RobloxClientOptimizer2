@@ -9,8 +9,10 @@
 
 using std::string;
 
-std::string rootDir("C:\\RClientOptimizer2");
 bool isConsoleHidden = false;
+bool isRcoEnabled = false;
+
+std::string rootDir("C:\\RClientOptimizer2");
 char* buf = nullptr;
 size_t sz = 0;
 
@@ -104,6 +106,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 int main() {
+    //Preinit
     if (std::filesystem::exists(rootDir) == false) {
         std::cout << "Could not find proper RCO files, please reinstall RCO | 0x1\n";
         std::cin.get();
@@ -124,12 +127,27 @@ int main() {
         curl_easy_setopt(req, CURLOPT_WRITEDATA, file);
         curl_easy_perform(req);
         curl_easy_cleanup(req);
-        
+
         fclose(file);
     }
 
+    if (std::filesystem::exists(rootDir + "\\isHidden.rco") == false) {
+        std::ofstream isHiddenFile;
+        isHiddenFile.open(rootDir + "\\isHidden.rco");
+        isHiddenFile << "f";
+        isHiddenFile.close();
+    }
+
+    if (std::filesystem::exists(rootDir + "\\isEnabled.rco") == false) {
+        std::ofstream isEnabledFile;
+        isEnabledFile.open(rootDir + "\\isEnabled.rco");
+        isEnabledFile << "f";
+        isEnabledFile.close();
+    }
+    //Initialize the tray icon system
     std::thread t1(traySystem);
 
+    //Set roblox versions folder location variable
     string robloxVersionFolder;
     if (!(_dupenv_s(&buf, &sz, "localappdata") == 0 && buf != nullptr)) {
         std::cout << "Error finding LocalAppData folder (NOTE: THIS PROGRAM ONLY WORKS ON WINDOWS) | 0x2\n";
@@ -146,6 +164,7 @@ int main() {
         return 3;
     }
 
+    //
     std::cout << robloxVersionFolder;
     std::cin.get();
 }
