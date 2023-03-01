@@ -5,17 +5,20 @@
 #include <thread>
 #include "curl/curl.h"
 
-//Tray icon code from stackoverflow and various other internet sources, I was unsure on how it worked.
-
 using std::string;
 
 bool isConsoleHidden = false;
 bool isRcoEnabled = false;
 
 std::string rootDir("C:\\RClientOptimizer2");
+string robloxVersionFolder;
+
 char* buf = nullptr;
 size_t sz = 0;
 
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+//Tray icon code from stackoverflow and various other internet sources, I was unsure on how it worked.
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 LPCWSTR lpszClass = L"__hidden__";
 
@@ -107,7 +110,73 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hWnd, iMsg, wParam, lParam);
 }
 
-HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+void printMainText() {
+    system("cls");
+    std::cout << "Roblox Client Optimizer 2 coded in C++ by Kaid | fflag list by nul\n\nRCO is currently: ";
+    if (isRcoEnabled) {
+        SetConsoleTextAttribute(hConsole, 10);
+        std::cout << "Enabled";
+        SetConsoleTextAttribute(hConsole, 7);
+        std::cout << "\nPress enter to ";
+        SetConsoleTextAttribute(hConsole, 12);
+        std::cout << "Disable";
+        SetConsoleTextAttribute(hConsole, 7);
+        std::cout << " RCO.\n\n";
+    }
+    else {
+        SetConsoleTextAttribute(hConsole, 12);
+        std::cout << "Disabled";
+        SetConsoleTextAttribute(hConsole, 7);
+        std::cout << "\nPress enter to ";
+        SetConsoleTextAttribute(hConsole, 10);
+        std::cout << "Enable";
+        SetConsoleTextAttribute(hConsole, 7);
+        std::cout << " RCO.\n\n";
+    }
+
+    SetConsoleTextAttribute(hConsole, 6);
+    std::cout << "This window can be hidden via the RCO tray icon!\nYou can ";
+    SetConsoleTextAttribute(hConsole, 12);
+    std::cout << "close";
+    SetConsoleTextAttribute(hConsole, 6);
+    std::cout << " RCO with ALT+F4 or any other similar method.\n";
+    SetConsoleTextAttribute(hConsole, 7);
+}
+
+static auto WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata) -> size_t { //Thank you stackoverflow... (https://stackoverflow.com/a/60516083)
+    static_cast<string*>(userdata)->append(ptr, size * nmemb);
+    return size * nmemb;
+}
+
+void mainThread() {
+    while (true) {
+        while (!isRcoEnabled) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
+        std::string robloxVersionStr;
+        CURL* req = curl_easy_init();
+        CURLcode res;
+        curl_easy_setopt(req, CURLOPT_URL, "http://setup.roblox.com/version");
+        curl_easy_setopt(req, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(req, CURLOPT_WRITEDATA, &robloxVersionStr);
+        res = curl_easy_perform(req);
+        if (res != CURLE_OK) {
+            std::cout << "\nNETWORK ERROR | PLEASE CHECK YOUR INTERNET CONNECTION | TRYING AGAIN IN 30 SECONDS. | 0x5\n";
+            curl_easy_cleanup(req);
+            std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+            printMainText();
+            continue;
+        }
+        curl_easy_cleanup(req);
+        if (std::filesystem::exists(robloxVersionFolder + "\\" + robloxVersionStr) == false) {
+            std::cout << "\nYour Roblox install is outdated. Please update Roblox. | TRYING AGAIN IN 10 SECONDS. | 0x6\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+            printMainText();
+            continue;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(60000));
+    }
+}
 
 int main() {
     //Preinit
@@ -156,11 +225,7 @@ int main() {
         isEnabledFile << "f";
         isEnabledFile.close();
     }
-    //Initialize the tray icon system
-    std::thread t1(traySystem);
 
-    //Set roblox versions folder location variable
-    string robloxVersionFolder;
     if (!(_dupenv_s(&buf, &sz, "localappdata") == 0 && buf != nullptr)) {
         std::cout << "Error finding LocalAppData folder | 0x2\n";
         std::cin.get();
@@ -175,6 +240,9 @@ int main() {
         std::cin.get();
         return 3;
     }
+
+    //Initialize the tray icon system
+    std::thread t1(traySystem);
 
     //Set Hidden and Enabled based on saved file
     std::ifstream hiddenFile(rootDir + "\\isHidden.rco");
@@ -201,47 +269,21 @@ int main() {
 
     //Handle Hidden Value
     if (isConsoleHidden) {
-        ShowWindow(GetConsoleWindow(), SW_HIDE);
+        ShowWindow(consoleWindow, SW_HIDE);
     } else {
-        ShowWindow(GetConsoleWindow(), SW_SHOW);
+        ShowWindow(consoleWindow, SW_SHOW);
     }
 
     SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MINIMIZEBOX);
     SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX);
     EnableMenuItem(GetSystemMenu(consoleWindow, FALSE), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
+    //Call the main fflag updating thread
+    std::thread t2(mainThread);
+
     //Input loop
     while (true) {
-        system("cls");
-        std::cout << "Roblox Client Optimizer 2 coded in C++ by Kaid | fflag list by nul\n\nRCO is currently: ";
-        if (isRcoEnabled) {
-            SetConsoleTextAttribute(hConsole, 10);
-            std::cout << "Enabled";
-            SetConsoleTextAttribute(hConsole, 7);
-            std::cout << "\nPress enter to ";
-            SetConsoleTextAttribute(hConsole, 12);
-            std::cout << "Disable";
-            SetConsoleTextAttribute(hConsole, 7);
-            std::cout << " RCO.\n\n";
-        } else {
-            SetConsoleTextAttribute(hConsole, 12);
-            std::cout << "Disabled";
-            SetConsoleTextAttribute(hConsole, 7);
-            std::cout << "\nPress enter to ";
-            SetConsoleTextAttribute(hConsole, 10);
-            std::cout << "Enable";
-            SetConsoleTextAttribute(hConsole, 7);
-            std::cout << " RCO.\n\n";
-        }
-
-        SetConsoleTextAttribute(hConsole, 6);
-        std::cout << "This window can be hidden via the RCO tray icon!\nYou can ";
-        SetConsoleTextAttribute(hConsole, 12);
-        std::cout << "close";
-        SetConsoleTextAttribute(hConsole, 6);
-        std::cout << " RCO with ALT+F4 or any other similar method.\n";
-        SetConsoleTextAttribute(hConsole, 7);
-
+        printMainText();
         string t; //Throwaway
         std::getline(std::cin, t);
 
