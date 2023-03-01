@@ -51,6 +51,7 @@ int traySystem() {
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     static NOTIFYICONDATA nid;
     std::ofstream isHiddenFile;
+    HWND consoleWindow = GetConsoleWindow();
 
     switch (iMsg) {
         case WM_CREATE:
@@ -67,13 +68,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
             switch (lParam) {
             case WM_LBUTTONDBLCLK:
                 if (isConsoleHidden) {
-                    ShowWindow(GetConsoleWindow(), SW_SHOW);
+                    ShowWindow(consoleWindow, SW_SHOW);
                     isConsoleHidden = false;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "f";
                     isHiddenFile.close();
                 } else {
-                    ShowWindow(GetConsoleWindow(), SW_HIDE);
+                    ShowWindow(consoleWindow, SW_HIDE);
                     isConsoleHidden = true;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "t";
@@ -82,13 +83,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
                 break;
             case WM_LBUTTONDOWN:
                 if (isConsoleHidden) {
-                    ShowWindow(GetConsoleWindow(), SW_SHOW);
+                    ShowWindow(consoleWindow, SW_SHOW);
                     isConsoleHidden = false;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "f";
                     isHiddenFile.close();
                 } else {
-                    ShowWindow(GetConsoleWindow(), SW_HIDE);
+                    ShowWindow(consoleWindow, SW_HIDE);
                     isConsoleHidden = true;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "t";
