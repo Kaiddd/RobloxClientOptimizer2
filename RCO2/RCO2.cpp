@@ -150,7 +150,7 @@ int main() {
     //Set roblox versions folder location variable
     string robloxVersionFolder;
     if (!(_dupenv_s(&buf, &sz, "localappdata") == 0 && buf != nullptr)) {
-        std::cout << "Error finding LocalAppData folder (NOTE: THIS PROGRAM ONLY WORKS ON WINDOWS) | 0x2\n";
+        std::cout << "Error finding LocalAppData folder | 0x2\n";
         std::cin.get();
         return 2;
     }
@@ -159,7 +159,7 @@ int main() {
     free(buf);
 
     if (std::filesystem::exists(robloxVersionFolder) == false) {
-        std::cout << "Roblox not found. Please reinstall Roblox (NOTE: THIS PROGRAM ONLY WORKS ON WINDOWS) | 0x3\n";
+        std::cout << "Roblox not found. Please reinstall Roblox | 0x3\n";
         std::cin.get();
         return 3;
     }
