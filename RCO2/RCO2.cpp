@@ -105,6 +105,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hWnd, iMsg, wParam, lParam);
 }
 
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 int main() {
     //Preinit
     if (std::filesystem::exists(rootDir) == false) {
@@ -122,10 +124,16 @@ int main() {
         }
 
         CURL* req = curl_easy_init();
+        CURLcode res;
         curl_easy_setopt(req, CURLOPT_URL, "https://raw.githubusercontent.com/Kaiddd/RobloxClientOptimizer2/main/animegirl.ico");
         curl_easy_setopt(req, CURLOPT_WRITEFUNCTION, NULL);
         curl_easy_setopt(req, CURLOPT_WRITEDATA, file);
-        curl_easy_perform(req);
+        res = curl_easy_perform(req);
+        if (res != CURLE_OK) {
+            std::cout << "NETWORK ERROR | PLEASE CHECK YOUR INTERNET CONNECTION | 0x4\n";
+            std::cin.get();
+            return 4;
+        }
         curl_easy_cleanup(req);
 
         fclose(file);
@@ -164,7 +172,71 @@ int main() {
         return 3;
     }
 
-    //
-    std::cout << robloxVersionFolder;
-    std::cin.get();
+    //Set Hidden and Enabled based on saved file
+    std::ifstream hiddenFile(rootDir + "\\isHidden.rco");
+    hiddenFile.seekg(0, std::ios::end);
+    size_t size = hiddenFile.tellg();
+    string buffer(size, ' ');
+    hiddenFile.seekg(0);
+    hiddenFile.read(&buffer[0], size);
+    if (buffer == "t") {
+        isConsoleHidden = true;
+    }
+    hiddenFile.close();
+
+    std::ifstream enabledFile(rootDir + "\\isEnabled.rco");
+    enabledFile.seekg(0, std::ios::end);
+    size = enabledFile.tellg();
+    buffer = string(size, ' ');
+    enabledFile.seekg(0);
+    enabledFile.read(&buffer[0], size);
+    if (buffer == "t") {
+        isRcoEnabled = true;
+    }
+    enabledFile.close();
+
+    //Handle Hidden Value
+    if (isConsoleHidden) {
+        ShowWindow(GetConsoleWindow(), SW_HIDE);
+    } else {
+        ShowWindow(GetConsoleWindow(), SW_SHOW);
+    }
+
+    //Input loop
+    while (true) {
+        system("cls");
+        std::cout << "Roblox Client Optimizer 2 coded in C++ by Kaid | fflag list by nul\n\nRCO is currently: ";
+        if (isRcoEnabled) {
+            SetConsoleTextAttribute(hConsole, 10);
+            std::cout << "Enabled";
+            SetConsoleTextAttribute(hConsole, 7);
+            std::cout << "\nPress enter to ";
+            SetConsoleTextAttribute(hConsole, 12);
+            std::cout << "Disable";
+            SetConsoleTextAttribute(hConsole, 7);
+            std::cout << " RCO.\n\n";
+        } else {
+            SetConsoleTextAttribute(hConsole, 12);
+            std::cout << "Disabled";
+            SetConsoleTextAttribute(hConsole, 7);
+            std::cout << "\nPress enter to ";
+            SetConsoleTextAttribute(hConsole, 10);
+            std::cout << "Enable";
+            SetConsoleTextAttribute(hConsole, 7);
+            std::cout << " RCO.\n\n";
+        }
+
+        string t; //Throwaway
+        std::getline(std::cin, t);
+
+        isRcoEnabled = !isRcoEnabled;
+        std::ofstream isEnabledFile;
+        isEnabledFile.open(rootDir + "\\isEnabled.rco");
+        if (isRcoEnabled) {
+            isEnabledFile << "t";
+        } else {
+            isEnabledFile << "f";
+        }
+        isEnabledFile.close();
+    }
 }
