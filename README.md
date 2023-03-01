@@ -32,4 +32,3 @@ Some things RCO currently does:
 
 Do you have any issues installing RCO? Read here!
 1. RCO *ONLY* works on Windows, though it should also work on custom Windows mods. (Only tested on 10)
-2. If you have UAC disabled, or you are using a custom Windows ISO that disables UACs functionality, run rco-installer-NOUAC-DONT-USE-UNLESS-NEEDED.cmd to install RCO, instead of the regular installer.
