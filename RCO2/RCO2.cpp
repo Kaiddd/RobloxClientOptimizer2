@@ -17,6 +17,9 @@ char* buf = nullptr;
 size_t sz = 0;
 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+HWND consoleWindow1 = GetConsoleWindow();
+bool _ = SetForegroundWindow(consoleWindow1);
+HWND consoleWindow = GetForegroundWindow();
 
 //Tray icon code from stackoverflow and various other internet sources, I was unsure on how it worked.
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
@@ -51,8 +54,6 @@ int traySystem() {
     return static_cast<int>(msg.wParam);
 }
 
-HWND consoleWindow = GetConsoleWindow();
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
     static NOTIFYICONDATA nid;
     std::ofstream isHiddenFile;
@@ -73,13 +74,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
             case WM_LBUTTONDBLCLK:
                 if (isConsoleHidden) {
                     ShowWindow(consoleWindow, SW_SHOW);
-                    ShowWindow(consoleWindow, SW_SHOW);
                     isConsoleHidden = false;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "f";
                     isHiddenFile.close();
                 } else {
-                    ShowWindow(consoleWindow, SW_HIDE);
                     ShowWindow(consoleWindow, SW_HIDE);
                     isConsoleHidden = true;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
@@ -90,13 +89,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
             case WM_LBUTTONDOWN:
                 if (isConsoleHidden) {
                     ShowWindow(consoleWindow, SW_SHOW);
-                    ShowWindow(consoleWindow, SW_SHOW);
                     isConsoleHidden = false;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "f";
                     isHiddenFile.close();
                 } else {
-                    ShowWindow(consoleWindow, SW_HIDE);
                     ShowWindow(consoleWindow, SW_HIDE);
                     isConsoleHidden = true;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
@@ -351,9 +348,7 @@ int main() {
     //Handle Hidden Value
     if (isConsoleHidden) {
         ShowWindow(consoleWindow, SW_HIDE);
-        ShowWindow(consoleWindow, SW_HIDE);
     } else {
-        ShowWindow(consoleWindow, SW_SHOW);
         ShowWindow(consoleWindow, SW_SHOW);
     }
 
