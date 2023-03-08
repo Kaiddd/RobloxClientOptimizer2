@@ -17,9 +17,7 @@ char* buf = nullptr;
 size_t sz = 0;
 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-HWND consoleWindow1 = GetConsoleWindow();
-bool _ = SetForegroundWindow(consoleWindow1);
-HWND consoleWindow = GetForegroundWindow();
+HWND consoleWindow = GetConsoleWindow();
 
 //Tray icon code from stackoverflow and various other internet sources, I was unsure on how it worked.
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
