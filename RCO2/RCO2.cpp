@@ -255,9 +255,9 @@ int main() {
     if (std::filesystem::exists(rootDir + "\\animegirl.ico") == false) {
         FILE* file;
         if (fopen_s(&file, (rootDir + "\\animegirl.ico").c_str(), "wb") != 0) {
-            std::cout << "Could not open filepoint... | 0x4\n";
+            std::cout << "Could not open filepoint... | 0x2\n";
             std::cin.get();
-            return 4;
+            return 2;
         }
 
         CURL* req = curl_easy_init();
@@ -297,10 +297,10 @@ int main() {
         isEnabledFile.close();
     }
 
-    if (!(_dupenv_s(&buf, &sz, "localappdata") == 0 && buf != nullptr)) {
-        std::cout << "Error finding LocalAppData folder | 0x2\n";
+    if (std::filesystem::exists("C:\\Program Files (x86)\\Roblox\\Versions") == true) {
+        std::cout << "Detected an Administrative Roblox install at C:\\Program Files (x86)\\Roblox\\Versions\nPlease reinstall Roblox without administrator, as RCO does not have Administrative permissions. | 0xA\nIf you've already reinstalled and still see this, please delete C:\\Program Files (x86)\\Roblox\n";
         std::cin.get();
-        return 2;
+        return 10;
     }
 
     robloxVersionFolder = buf + string("\\Roblox\\Versions");
