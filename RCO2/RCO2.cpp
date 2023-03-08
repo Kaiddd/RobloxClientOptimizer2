@@ -73,11 +73,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
             case WM_LBUTTONDBLCLK:
                 if (isConsoleHidden) {
                     ShowWindow(consoleWindow, SW_SHOW);
+                    ShowWindow(consoleWindow, SW_SHOW);
                     isConsoleHidden = false;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "f";
                     isHiddenFile.close();
                 } else {
+                    ShowWindow(consoleWindow, SW_HIDE);
                     ShowWindow(consoleWindow, SW_HIDE);
                     isConsoleHidden = true;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
@@ -88,11 +90,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
             case WM_LBUTTONDOWN:
                 if (isConsoleHidden) {
                     ShowWindow(consoleWindow, SW_SHOW);
+                    ShowWindow(consoleWindow, SW_SHOW);
                     isConsoleHidden = false;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
                     isHiddenFile << "f";
                     isHiddenFile.close();
                 } else {
+                    ShowWindow(consoleWindow, SW_HIDE);
                     ShowWindow(consoleWindow, SW_HIDE);
                     isConsoleHidden = true;
                     isHiddenFile.open(rootDir + "\\isHidden.rco");
@@ -347,7 +351,9 @@ int main() {
     //Handle Hidden Value
     if (isConsoleHidden) {
         ShowWindow(consoleWindow, SW_HIDE);
+        ShowWindow(consoleWindow, SW_HIDE);
     } else {
+        ShowWindow(consoleWindow, SW_SHOW);
         ShowWindow(consoleWindow, SW_SHOW);
     }
 
