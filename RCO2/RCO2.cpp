@@ -303,6 +303,12 @@ int main() {
         return 10;
     }
 
+    if (!(_dupenv_s(&buf, &sz, "localappdata") == 0 && buf != nullptr)) {
+        std::cout << "Error finding LocalAppData folder | 0xB\n";
+        std::cin.get();
+        return 11;
+    }
+
     robloxVersionFolder = buf + string("\\Roblox\\Versions");
     free(buf);
 
