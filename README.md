@@ -1,5 +1,3 @@
-# RCO2
+this project is discontinued in favor of RFO
 
-# About RCO2
-
-RCO2 automatically tweaks FFlags to optimize your Roblox client.
+https://dc.rfo.sh/
